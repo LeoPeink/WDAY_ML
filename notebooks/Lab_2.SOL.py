@@ -6,7 +6,34 @@
 
 
 import numpy as np
-import notebooks.LP_LIB as lp
+import LP_LIB as lp
 import matplotlib.pyplot as plt
 
+#STEP 1:
+#generate uniform, random X array
+#generate y = sin(pi*x)
 
+    #(1) ASAIW:
+    #generate gaussian, random noise array as eps
+    #re-generate y = sin(pi*x)+eps
+
+n = 500  #number of points       (observations)
+dim = 1 #number of dimensions   (features)
+l = 0   #lower bound for x
+u = 100 #upper bound for x
+#X = np.array(np.random.uniform(l,u,n))
+X = np.linspace(-100,100)
+print(X) 
+y = np.sin(np.pi*X)
+print(y)  
+
+plt.scatter(X,y)
+plt.show()
+
+
+"""
+X,y = lp.linDataGen(50,1,0,1,None,0.1)
+print(X)
+plt.scatter(X,y)
+plt.show()
+"""
