@@ -218,19 +218,48 @@ def uniformDataGen(n_points, n_classes = 1, n_dimension = 2, limits = None, labe
     dataset[:, n_dimension] = np.random.choice(labels, size=(1, n_points), p=labels_prob)
     return dataset
     
-    
-
 # just to remember data[:,2] = np.where( (data[:,0]*m+q-data[:,1]<0) ^ (np.random.rand(len(data[:,1]))<0.05), -1, 1 )
 
-def lineForRelableBidimensional(m, q):
+def sinusoidalForRelableBidimensional(period = 2*np.pi, amplitude = 1, quota = 0, slope = 0):
     """
+    Return a function that classify the data if it's over (True) or under (False) the sinusoid
+    defined by period and amplitude. Quota and slope defines a line that is added to the sinusoid
+
+    Parameters
+
+    ----------
+    period : float
+        distance from two peak
+    amplitude : float
+        half distance from local max and min
+    slope : float
+        pendence of the line
+    intercept : float
+        quota of the line
+    
+    Returns
+    
+    -------
+    
+    line : function
+        A function that return a list of true/false. Will be used for classification in datasetRelable
+    
+    """
+    def sinusoid(data):
+        return np.sin(data[:,0]/(period/(np.pi*2)))*amplitude + quota + slope * data[:,0] - data[:,1]<0
+    return sinusoid
+
+def lineForRelableBidimensional(slope, intercept):
+    """
+    return a function that classify the data if it's over (True) or under (False) the line defined by slope and intercept
+
     Parameters
 
     ----------
 
-    m : float
+    slope : float
         pendence of the line
-    q : float
+    intercept : float
         quota of the line
     
     Returns
@@ -243,7 +272,7 @@ def lineForRelableBidimensional(m, q):
     """
 
     def line(data):
-        return data[:,0]*m+q-data[:,1]<0
+        return data[:,0]*slope+intercept-data[:,1]<0
     return line
 
 def datasetRelable(function, dataset, label1 = 1, label2 = 0, mislabeling_prob = 0):
@@ -281,7 +310,6 @@ data = zl.gCloudDataGen(n_points=500, sparcity=1, classes=3, labels=[1,1,1])
 myfun = zl.lineForRelableBidimensional(m,q)
 dataset[:,2] = zl.datasetRelable(myfun, dataset, mislabeling_prob=0.1)
 """
-
 
 def linearRegression(x_train, y_train):
     """
@@ -328,3 +356,5 @@ def ridgeRegression(x_train, y_train, lam):
     d=1 #WORKAROUND, TODO FIX ME!!!
     w = (inv(x_train.T@x_train+lam*np.eye(d))@x_train.T)@y_train
     return w
+
+
