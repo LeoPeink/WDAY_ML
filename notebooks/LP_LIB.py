@@ -351,10 +351,13 @@ def ridgeRegression(x_train, y_train, lam):
     import numpy as np
     import numpy.linalg as la
     from numpy.linalg import inv
-    
-    #d = np.shape(x_train)[1] #TODO sistema sta merda di dimensionalità
-    d=1 #WORKAROUND, TODO FIX ME!!!
+
+    try:
+        d = np.shape(x_train)[1]
+    except IndexError:
+        d = 1
     w = (inv(x_train.T@x_train+lam*np.eye(d))@x_train.T)@y_train
+    
     return w
 
 
