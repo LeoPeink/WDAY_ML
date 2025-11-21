@@ -10,15 +10,16 @@ from sklearn.model_selection import train_test_split
 
 #generate linear (albeit noisy) data for linear regression.
 
-n = 100
-dim = 1
+n = 50
+dim = 2
 l = 0
 u = 1
-w = [10]
-q=0
-sigma = 5
+w = [3,2]
+q=10
+sigma = 0
+global_seed = 3
 
-np.random.seed(42)
+np.random.seed(global_seed)
 
 #create an array for weights
 ws = []
@@ -29,14 +30,23 @@ MLE_TR = []
 MLE_TE = []
 #generate data
 
-d = lp.linDataGen(n,dim,l,u,w,q,sigma,True)
+d = lp.linDataGen(n,dim,l,u,w,q,sigma)
+plt.figure()
+#3d plot of data
 X = d[0]
 y = d[1]
-y_t = d[2]
-
+#y_t = d[2]
+ax = plt.axes(projection='3d')
+ax.set_xlabel('X1')
+ax.set_ylabel('X2')
+ax.set_zlabel('y')
+ax.scatter(X[:, 0], X[:,1],y, c='red')
+plt.title('Generated linear data with noise')
+plt.show() 
 #evaluate ridge regression for different values of lambda
 #split training and testing data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=global_seed)
+
 
 #print(d)
 fig = plt.figure(0)
@@ -46,7 +56,7 @@ plt.ylim(min(y), max(y))
 #scatter test and training points in different colors
 plt.scatter(X_train,y_train, label = 'Training data')
 plt.scatter(X_test,y_test, label = 'Testing data')
-plt.plot(X,y_t, c='green', label='Ground truth',alpha=0.5)
+plt.plot(X,y_t, c='green', label='Ground truth',alpha=1)
 
 #implement linear regression in closed form
 
@@ -67,7 +77,7 @@ for i in range(n_models):
     yp = w * X_train
     #use gradient to plot clearly every different model
     
-    plt.plot(X_train, yp, c=plt.cm.Greys(i/n_models), alpha=1, label='Ridge Regression lambda=%.2f' % lam)
+    ##plt.plot(X_train, yp, c=plt.cm.Greys(i/n_models), alpha=1, label='Ridge Regression lambda=%.2f' % lam)
     MLE_TR.append(mean_squared_error(y_train, yp))    #training error
     
     
@@ -79,6 +89,7 @@ for i in range(n_models):
 print("Estimated w:")
 print(w)
 plt.legend()
+
 
 plt.figure()
 plt.scatter(lams,ws, label='weight over lambda value')
