@@ -28,8 +28,37 @@ def rescale(x,new_min,new_max,old_min=0,old_max=1):
         raise ValueError("old_max and old_min cannot be the same")
     for i in range(len(x)):
         return (new_max - new_min)*(x[i] - old_min)/(old_max-old_min) + new_min
+
+def multiDimLinDataGen(n_points, n_dimension = 1, limits = None, coeficients = None, ofsets = None, sigma = 0, truth=False):
+    """
+    limits : array[[int,int]]
+        upper and lower limit for each dimension of the dataset
+
+    """
+    if hasattr(limits, "shape") & limits.shape[0] == 2:
+        limits = np.array([limits]*n_dimension)
+    if limits is None:
+        limits = np.array([[-1,1]]*n_dimension)
+    if limits.shape != (n_dimension,2):
+        raise ValueError("limits must be of shape (n_dimension, 2)")
     
-def linDataGen(n,dim=1,lower=0,upper=1,w=None,q=0,sigma=0, truth=False):
+    if coeficients is None:
+        coeficients = np.ones(n_dimension)
+    if coeficients.shape[0] < n_dimension:
+        coeficients = np.append(coeficients, np.zeros(n_dimension-coeficients.shape[0]))
+    
+    if ofsets is None:
+        ofsets = np.zeros(n_dimension)
+    if ofsets.shape[0] < n_dimension:
+        ofsets = np.append(ofsets, np.zeros(n_dimension-ofsets.shape[0]))
+    
+    dataset = np.empty((n_points, n_dimension))
+    for i in range(n_points):
+        dataset[i] = coeficients @ np.random.uniform(limits[0], limits[1]) + ofsets + np.random.normal(0, sigma, n_dimension)
+    # TODO rivedre questa parte, not happy
+    return dataset
+    
+def linDataGen(n,dim=1,lower=0,upper=1,w=None, q = 0, sigma=0, truth=False):
     """
     Generates either clean or noisy, linearly-generated data.
     Formally returns y,X where y=wX + eps, where eps is gaussian noise.
@@ -76,7 +105,7 @@ def linDataGen(n,dim=1,lower=0,upper=1,w=None,q=0,sigma=0, truth=False):
     if truth:
         return X,y,yt
     else:
-        return X,y
+        return X,y #TODO questo deve tornare un dataset normale, non due array distinti
 """
 #DEMO linDataGen
 import numpy as np
