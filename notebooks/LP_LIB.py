@@ -72,7 +72,7 @@ def linDataGen(n,dim=1,lower=0,upper=1,w=None,q=0,sigma=0, truth=False):
     y = X @ w + q + eps
     yt = X @ w + q
     #y = np.dot(X,w)+q+eps
-    yt = np.dot(X,w)+q
+    #yt = np.dot(X,w)+q
     if truth:
         return X,y,yt
     else:
