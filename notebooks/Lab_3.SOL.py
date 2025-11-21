@@ -9,11 +9,11 @@ from numpy.linalg import inv
 
 n = 100
 dim = 1
-l = -10
-u = 10
+l = 0
+u = 1
 w = [10]
 q=0
-sigma = 0.5
+sigma = 5
 
 np.random.seed(42)
 
@@ -33,21 +33,33 @@ plt.plot(X,y_t, c='red', label='Ground truth',alpha=0.5)
 #implement linear regression in closed form
 
 #w = (XX^t)^-1 XY^t
-w = inv(X.T @ X) @ X.T @ y
+#w = inv(X.T @ X) @ X.T @ y
+w = lp.linearRegression(X,y)
+plt.plot(X, X * w, c='green', label='Linear regression')
+#xp = np.linspace(l, u, 100)
 
 
+#create an array for weights
+ws = []
+lams = []
+n_models = 100
 
-for i in range(10):
-    lam = 10/(2*i+1)
+for i in range(n_models):
+    lam = n_models/(2*i+1)
     w = lp.ridgeRegression(X,y,lam)
-    xp = np.linspace(0,1,100)
-    yp = w * xp
-    plt.plot(xp,yp, label = 'RR [lam='+str(lam)+']')
+    ws.append(w)
+    lams.append(lam)
+    yp = w * X
+    plt.plot(X,yp, label = 'RR [lam='+str(lam)+']')
 
 print("Estimated w:")
 print(w)
 plt.legend()
+plt.show()
 
+
+plt.scatter(lams,ws)
+plt.show()
 
 
 
@@ -69,7 +81,6 @@ cid = fig.canvas.mpl_connect('button_press_event', mouse_event)
 """
 
 
-plt.show()
 
 
 
