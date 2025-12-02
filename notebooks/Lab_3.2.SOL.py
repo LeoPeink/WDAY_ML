@@ -41,11 +41,10 @@ ax.set_zlabel('y')
 plt.show()
 '''
 
-w_0 = [-100,50]
+w_0 = np.array([1,2])
 alpha = 0.5
-
-ws_lrgd = lp.squared_loss_gradientDescent(X,y,w_0,alpha,10000)
-ws_lrgd = lp.gradientDescent(lp.squared_loss_gradient,X,y,w_0,alpha,10000)
+initial_weights = lp.partialBallCreate(w_0)
+ws_lrgd = lp.GDSecVariabile(lp.squaredLoss, X, y, initial_weights, 1)
 
 print(w_lr)
 print(ws_lrgd[-1])
@@ -57,4 +56,8 @@ plt.hlines(w_lr,0,len(ws_lrgd), colors='red', label='Linear Regression Weights')
 plt.xlabel('Iterations')
 plt.ylabel('Weights')
 plt.legend()
+
+plt.figure()
+ws_lrgd = np.array(ws_lrgd)
+plt.scatter(ws_lrgd[:, 0], ws_lrgd[:, 1])
 plt.show()
