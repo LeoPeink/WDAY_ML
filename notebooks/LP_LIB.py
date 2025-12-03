@@ -355,6 +355,8 @@ def linearRegression(x_train, y_train):
         Estimated weights of the linear model
     """
     from numpy.linalg import inv
+    #TODO SEPARATE IN FUNCTION TO ADD 1s as last column of X to learn b (intercept) as well
+
     w = inv(x_train.T @ x_train) @ x_train.T @ y_train
     return w
 
@@ -487,6 +489,7 @@ def polySquaredLossGradient(X, y, w):
 def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15, fixed_alpha=True):
     if w_0 is None:
         w_0 = np.zeros(X.shape[1]) #if starting weights arent specified, generate 0s for every feature.
+        print(w_0)
     w = w_0
     ws = []
     losses = []
@@ -661,7 +664,6 @@ def GDSecantMethod(loss ,X ,y , ws, t_max, tol=1e-15):
             print("Converged in %d iterations" % i)
             return ws
     return ws
-
 
 def partialBallCreate(w):
     """

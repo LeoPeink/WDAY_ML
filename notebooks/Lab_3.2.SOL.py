@@ -7,12 +7,13 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 
 
-n = 500
+n = 10
 dim = 2
-l = 0
-u = 1
-w = [3,2]
-q=0
+l = 1
+u = 2
+#w = [3,2]
+w = None
+q=2
 sigma = 0
 global_seed = 1
 np.random.seed(global_seed)
@@ -21,6 +22,10 @@ X,y,t_true = lp.linDataGen(n,dim,l,u,w,q,sigma,True) #generate linear data with 
 
 X0 = np.array(X[:,0])
 X1 = np.array(X[:,1])
+
+
+#WE LEARN B AS WELL - MOD X TO HAVE 1s
+X = np.hstack((X, np.ones((X.shape[0],1))))    #add 1s to X so we learn b as well
 
 #fig = plt.figure()
 #ax = fig.add_subplot(projection='3d').scatter(X0,X1,y)
@@ -48,10 +53,10 @@ w_0 = None
 alpha = 1
 t_max = 100000
 tol = 1e-5
-ws_lrgd, losses = lp.gradientDescent(lp.squared_loss_gradient,lp.squaredLoss,X,y,w_0,alpha,t_max,tol)
+ws_lrgd, losses = lp.gradientDescent(lp.squaredLossGradient,lp.squaredLoss,X,y,w_0,alpha,t_max,tol)
 
 print(w_lr)
-print(ws_lrgd[-1])
+#print(ws_lrgd[-1])
 
 #plot losses
 plt.figure()
