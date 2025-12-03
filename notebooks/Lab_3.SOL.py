@@ -12,7 +12,7 @@ dim = 1
 l = 0
 u = 1
 w = None
-q=0
+q=5
 sigma = 1
 global_seed = 1
 np.random.seed(global_seed)

@@ -333,9 +333,7 @@ def datasetRelable(function, dataset, label1 = 1, label2 = 0, mislabeling_prob =
     """
     
     return np.where( (function(dataset)) ^ (np.random.rand(len(dataset[:,0]))<mislabeling_prob), label1, label2 )
-
 """ DEMO
-
 data = zl.gCloudDataGen(n_points=500, sparcity=1, classes=3, labels=[1,1,1])
 myfun = zl.lineForRelableBidimensional(m,q)
 dataset[:,2] = zl.datasetRelable(myfun, dataset, mislabeling_prob=0.1)
@@ -387,9 +385,7 @@ def ridgeRegression(x_train, y_train, lam):
     except IndexError:
         d = 1
     w = (inv(x_train.T@x_train+lam*np.eye(d))@x_train.T)@y_train
-    
     return w
-
 
 def squaredLoss(X,y,w):
     """
@@ -409,7 +405,6 @@ def squaredLoss(X,y,w):
     """
     return (np.linalg.norm((y-X@w),2)**2)/len(X)
 
-
 def squared_loss_gradient(X,y,w):
     """
     Calculates the gradient of the squared loss for linear model with weights w on data X with targets y.
@@ -428,57 +423,195 @@ def squared_loss_gradient(X,y,w):
     """
     return (2/len(X))*(X@w-y)@(X)
 
-def squared_loss_gradientDescent(X,y,w_0, alpha, t_max): #TODO implement proper tol
-    #if w_0 is None:
-    w = w_0
-    ws = []
-    for i in range(t_max):
-        s = -alpha*squared_loss_gradient(X,y,w)
-        w = w + s
-        ws.append(w)
-    return ws
-
-
-def gradientDescent(gradientFunction,X,y,w_0, alpha, t_max, tol=1e-15): #TODO implement proper tol
-    #if w_0 is None:
-    w = w_0
-    ws = []
-    for i in range(t_max):
-        s = -alpha*gradientFunction(X,y,w)
-        w = w + s
-        ws.append(w)
-        if(np.linalg.norm(s,2) < tol):
-            print("Converged in %d iterations" % i)
-            return ws
-    return ws
-
-
-def gradientDescent2(gradientFunction,X,y,w_0, alpha, t_max, tol=1e-15): #TODO implement proper tol
-    #if w_0 is None:
-   
-    #INITIALIZE ALL TO w_0
-    w = w_0
-    w_next = w_0
-    ws = [w_0]
-    t = 0
-    #while true
-    while t < t_max:
-        s = -alpha*gradientFunction(X,y,w)  #calculate stepsize
-        w_next = w + s                      #update weight
-        #print(np.linalg.norm((w_next-w),2))
-        t = t+1
-        err = squaredLoss(X,y,w_next)  #calculate error
-        w = w_next
-        ws.append(w)                        #(optional:add weight to array)
-        if(err < tol):
-            print("Converged in %d iterations" % t, "with error %.5f" % err)
-            return w
-    print("Max iterations reached")
-    return w
-    '''    
-    ws = []
-    while(ws[])
-    for i in range(t_max):
+def polySquaredLoss(X, y, w):
+    """
+    Calculates squared loss for polynomial regression.
+    Compatible with gradientDescent function interface.
+    
+    Parameters
+    ----------
+    X : array
+        Input data (1D array of x values)
+    y : array
+        True output values
+    w : array
+        Polynomial coefficients [highest degree first, ..., constant term]
+    
+    Returns
+    -------
+    float
+        Squared loss value
+    """
+    yp = np.polyval(w, X)  # calculate the polynomial (use the model on the data)
+    loss = 0
+    for i in range(len(X)):
+        loss += (yp[i] - y[i])**2
         
-    return ws
+    return loss/len(X)
+
+def polySquaredLossGradient(X, y, w):
+    """
+    Calculates the gradient of the squared loss for polynomial regression.
+    Compatible with gradientDescent function interface.
+    
+    For a polynomial model y = w[0]*x^(n-1) + w[1]*x^(n-2) + ... + w[n-1],
+    this function computes the gradient of the mean squared error with respect 
+    to the polynomial coefficients.
+    
+    Parameters
+    ----------
+    X : array
+        Input data (1D array of x values)
+    y : array
+        True output values
+    w : array
+        Polynomial coefficients [highest degree first, ..., constant term]
+    
+    Returns
+    -------
+    array
+        Gradient of the squared loss with respect to polynomial coefficients
+    """
+    n = len(X)              #dimension of input array
+    deg = len(w) - 1        #maximum degree of regression polynomial
+    y_pred = np.polyval(w, X)      #calculate polynomial predictions
+    residuals = y_pred - y          #calculate residuals
+    gradient = np.zeros_like(w)     #initialize gradient array, 1 element per polynomial coefficient
+    
+    # Build feature matrix for vectorized computation
+    X_powers = np.column_stack([X**power for power in range(deg, -1, -1)]) #RIGA PAZZESCA COPILOT DRAGO
+    # Vectorized gradient computation: gradient = (2/n) * X^T * residuals
+    gradient = (2/n) * X_powers.T @ residuals
+    return gradient
+
+
+def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15, fixed_alpha=True):
+    if w_0 is None:
+        w_0 = np.zeros(X.shape[1]) #if starting weights arent specified, generate 0s for every feature.
+    w = w_0
+    ws = []
+    losses = []
+    t0 = alpha
+    for t in range(t_max):                  #stopper at t_max, maximum iteractions TODO fix
+        if not fixed_alpha:
+            alpha = t0/(t+1)                    #optional: update alpha each step, as per Cornell's Best Practices
+        s = -alpha*gradientFunction(X,y,w)      #evaluate stepsize using learning rate (alpha) and the given gradient function
+        w = w + s                               #update model weights
+        ws.append(w.copy())                     #add to output (copy to avoid reference issues)
+        #print('weights at iteration ',t)
+        #print(w)
+        losses.append(lossFunction(X,y,w))        #add to output
+        #print(s)
+        if(np.linalg.norm(s,2) < tol):      #if stepsize is smaller than tol, stop
+            print("Converged in %d iterations at tol=%g" % (t, tol))
+            return ws, losses                       
+    print("Max iterations reached: %d" % t_max)
+    return ws, losses
+
+
+'''
+def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15):
+    if w_0 is None:
+        w_0 = np.zeros(X.shape[1]) #if starting weights arent specified, generate 0s for every feature.
+    w = w_0
+    ws = []
+    losses = []
+    t0 = alpha
+    for t in range(t_max):                  #stopper at t_max, maximum iteractions TODO fix
+        #for each weight, update w
+        alpha = t0/(t+1)                    #optional: update alpha each step, as per Cornell's Best Practices
+        print(w)
+        s = -alpha*gradientFunction(X,y,w)      #evaluate stepsize using learning rate (alpha) and the given gradient function
+        w = w + s                       #update model weights
+        ws.append(w)                                #add to output
+        #print('weights at iteration ',t)
+        #print(w)
+        losses.append(lossFunction(X,y,w))        #add to output
+        #print(s)
+        if(np.linalg.norm([s],2) < tol):      #if stepsize is smaller than tol, stop
+            print("Converged in %d iterations at tol=%g" % (t, tol))
+            return ws, losses                       
+    print("Max iterations reached: %d" % t_max)
+    return ws, losses
+'''
+    
+
+#TODO implement variable secant in R^n 
+def variableSec(w_0,X,y, t_max, tol=1e-14):
+    
+    ws = [] 
+    k = 0
+    ws[k] = w_0
+    #for()
+    ak = squaredLoss(ws[k])
+    #ak = ( f[k] - f[k-1] )/(w[k]-w[k-1])   calculate ak
+    #w[k+1] = w[k] - f(w[k])/ak             find next ws => w[k+1]
+''''''
+     
+    
+def polyDataGen(n,deg=1,lower=0,upper=1,w=None, q=0, sigma=0, truth=False):
+    #NB: deg is the number of "dimensions" of the polynomial, every point has deg features.
+    """
+    Generates either clean or noisy, polynomially-generated data.
+    Formally returns y,X where y= sum(w_i*x^i) + eps, where eps is gaussian noise.
+    Parameters
+    ----------
+    n : int
+        Number of points to be generated (num. of rows, entries)
+    deg : int
+        Degree of the polynomial
+    lower : float
+        Lower bound for the domain of the data points
+    upper : float
+        Upper bound for the domain of the data points
+    w : float array of dim deg
+        Vector of weights of the polynomial model
+    q : float
+        intercept with y axis, (y = mx+q)
+    sigma : float
+        Standard deviation of the noise eps
+    Returns
+    ----------
+    x : array
+        Generated input data
+    y : array
+        Generated output data
+    (optional - if truth=True)
+    yt : array
+        Ground-truth data, un-noised model
+    """ 
+    if w is None:
+        w = np.ones((deg)) #set default coefficients as 1s
+        w = np.random.rand(deg)
+        #TODO random weights
+    y = []
+    y_true = []
+    yc = 0
+    #x = np.random.uniform(lower,upper,n) #TODO see if uniform + sort is better than linspace
+    #x = sorted(x)
+    #alternative to the last 2 lines: 
+    x = np.linspace(lower,upper,n)
+    #print(x)
+    #evaluate poly in every x
+    #y = x + x*w + x*w^2 ... + x*w^deg
+    eps = np.random.normal(0,sigma,n)
+    for i in range(n):              #for each x,
+        for d in range(deg):        #compute yc += x*w^d, yc is "y current"
+            yc +=  w[d]*np.pow(x[i],d)
+        y.append(yc+eps[i])
+        y_true.append(yc)
+    #print(y)
+    if truth:
+        return x, y, y_true
+    return x, y
     '''
+    x_poly = np.linspace(lower,upper,n)
+    for d in range(deg):
+        
+    #for x in x_poly
+    #calculate y as y = wx
+    y_poly = np.polyfit(x_poly)
+    np.polyfit()
+    '''
+    return w
+    

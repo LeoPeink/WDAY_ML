@@ -13,7 +13,7 @@ l = 0
 u = 1
 w = [3,2]
 q=0
-sigma = 0.25
+sigma = 0
 global_seed = 1
 np.random.seed(global_seed)
 
@@ -41,14 +41,25 @@ ax.set_zlabel('y')
 plt.show()
 '''
 
-w_0 = [-100,50]
-alpha = 0.5
 
-ws_lrgd = lp.squared_loss_gradientDescent(X,y,w_0,alpha,10000)
-ws_lrgd = lp.gradientDescent(lp.squared_loss_gradient,X,y,w_0,alpha,10000)
+
+#w_0 = [-100,50]
+w_0 = None
+alpha = 1
+t_max = 100000
+tol = 1e-5
+ws_lrgd, losses = lp.gradientDescent(lp.squared_loss_gradient,lp.squaredLoss,X,y,w_0,alpha,t_max,tol)
 
 print(w_lr)
 print(ws_lrgd[-1])
+
+#plot losses
+plt.figure()
+plt.plot(range(len(losses)), losses)
+plt.xlabel('Iterations')
+plt.ylabel('Squared Loss')
+plt.title('Squared Loss vs Iterations')
+plt.show()
 
 
 #plot the weights and the targets
@@ -57,4 +68,32 @@ plt.hlines(w_lr,0,len(ws_lrgd), colors='red', label='Linear Regression Weights')
 plt.xlabel('Iterations')
 plt.ylabel('Weights')
 plt.legend()
+
+# Create meshgrid for surface plotting
+x0_range = np.linspace(X0.min(), X0.max(), 20)
+x1_range = np.linspace(X1.min(), X1.max(), 20)
+X0_mesh, X1_mesh = np.meshgrid(x0_range, x1_range)
+
+# Create feature matrix for the mesh
+X_mesh = np.column_stack([X0_mesh.ravel(), X1_mesh.ravel()])
+# Predict outputs for the mesh
+y_mesh = X_mesh @ w_lr
+y_mesh2 = X_mesh @ ws_lrgd[-1]
+# Reshape predictions back to meshgrid shape
+y_mesh = y_mesh.reshape(X0_mesh.shape)
+y_mesh2 = y_mesh2.reshape(X0_mesh.shape)
+# Plot the surface
+fig = plt.figure() #new figure
+ax = fig.add_subplot(projection='3d') #3D axis
+surf1 = ax.plot_surface(X0_mesh, X1_mesh, y_mesh, color='red', alpha=0.5)
+surf2 = ax.plot_surface(X0_mesh, X1_mesh, y_mesh2, color='green', alpha=0.5)
+ax.scatter(X0, X1, y, c='blue', alpha=0.5) #actual outputs
+ax.set_xlabel('X0')
+ax.set_ylabel('X1')
+ax.set_zlabel('y')
+# Add a simple legend using patches (surface collections don't map directly to legend labels)
+from matplotlib.patches import Patch
+ax.legend(handles=[Patch(color='red', label='Linear Regression'),
+				   Patch(color='green', label='GD final'),
+				   Patch(color='blue', label='Data')])
 plt.show()
