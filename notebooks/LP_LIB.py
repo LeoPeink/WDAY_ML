@@ -422,6 +422,8 @@ def squaredLossGradient(X,y,w):
     array
         Gradient of the squared loss
     """
+    #TODO fix overflow
+    print((X@w-y))
     return (2/len(X))*(X@w-y)@(X)
 
 def polySquaredLoss(X, y, w):
@@ -488,7 +490,7 @@ def polySquaredLossGradient(X, y, w):
 
 def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15, fixed_alpha=True):
     if w_0 is None:
-        w_0 = np.zeros(X.shape[1]) #if starting weights arent specified, generate 0s for every feature.
+        w_0 = np.ones(X.shape[1]) #if starting weights arent specified, generate 0s for every feature. #TODO fix
         print(w_0)
     w = w_0
     ws = []

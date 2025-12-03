@@ -9,8 +9,8 @@ from sklearn.model_selection import train_test_split
 global_seed = 0
 n = 10
 dim=1
-lower=-10
-upper=10
+lower=-1
+upper=1
 trueDeg = 2      #data generation (true) degree
 degReg = 4     #regression degree. Closer to trueDeg => more accurate. 
 w=None
@@ -62,9 +62,7 @@ plt.ylabel('loss')
 plt.show()
 
 
-#calculate poly
-
-#how does GD work?
+#TODO NORMALIZE
 
 """
 #plot the polynomial regression result
