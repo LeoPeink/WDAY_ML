@@ -55,8 +55,8 @@ t_max = 100000
 tol = 1e-5
 ws_lrgd, losses = lp.gradientDescent(lp.squaredLossGradient,lp.squaredLoss,X,y,w_0,alpha,t_max,tol)
 
-print(w_lr)
-#print(ws_lrgd[-1])
+print(f"Linear Regression - Coefficients: {w_lr[:-1]}, Intercept: {w_lr[-1]}")
+print(f"Gradient Descent - Coefficients: {ws_lrgd[-1][:-1]}, Intercept: {ws_lrgd[-1][-1]}")
 
 #plot losses
 plt.figure()
@@ -79,8 +79,8 @@ x0_range = np.linspace(X0.min(), X0.max(), 20)
 x1_range = np.linspace(X1.min(), X1.max(), 20)
 X0_mesh, X1_mesh = np.meshgrid(x0_range, x1_range)
 
-# Create feature matrix for the mesh
-X_mesh = np.column_stack([X0_mesh.ravel(), X1_mesh.ravel()])
+# Create feature matrix for the mesh (include bias term)
+X_mesh = np.column_stack([X0_mesh.ravel(), X1_mesh.ravel(), np.ones(X0_mesh.size)])
 # Predict outputs for the mesh
 y_mesh = X_mesh @ w_lr
 y_mesh2 = X_mesh @ ws_lrgd[-1]
