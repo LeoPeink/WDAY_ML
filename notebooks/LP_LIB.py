@@ -358,7 +358,6 @@ def linearRegression(x_train, y_train):
     w = inv(x_train.T @ x_train) @ x_train.T @ y_train
     return w
 
-
 def ridgeRegression(x_train, y_train, lam):
     """
     Implements ridge regression using the closed-form solution.
@@ -392,11 +391,11 @@ def squaredLoss(X,y,w):
     Calcualtes squared loss for linear model with weights w on data X with targets y.
     Parameters
     ----------
-    X : array
+    X : 2dimensional np.array
         Input data
     y : array
         Output data
-    w : array
+    w : np.array
         Weights of the linear model
     Returns
     -------
@@ -405,7 +404,7 @@ def squaredLoss(X,y,w):
     """
     return (np.linalg.norm((y-X@w),2)**2)/len(X)
 
-def squared_loss_gradient(X,y,w):
+def squaredLossGradient(X,y,w):
     """
     Calculates the gradient of the squared loss for linear model with weights w on data X with targets y.
     Parameters
@@ -509,46 +508,7 @@ def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max
     return ws, losses
 
 
-'''
-def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15):
-    if w_0 is None:
-        w_0 = np.zeros(X.shape[1]) #if starting weights arent specified, generate 0s for every feature.
-    w = w_0
-    ws = []
-    losses = []
-    t0 = alpha
-    for t in range(t_max):                  #stopper at t_max, maximum iteractions TODO fix
-        #for each weight, update w
-        alpha = t0/(t+1)                    #optional: update alpha each step, as per Cornell's Best Practices
-        print(w)
-        s = -alpha*gradientFunction(X,y,w)      #evaluate stepsize using learning rate (alpha) and the given gradient function
-        w = w + s                       #update model weights
-        ws.append(w)                                #add to output
-        #print('weights at iteration ',t)
-        #print(w)
-        losses.append(lossFunction(X,y,w))        #add to output
-        #print(s)
-        if(np.linalg.norm([s],2) < tol):      #if stepsize is smaller than tol, stop
-            print("Converged in %d iterations at tol=%g" % (t, tol))
-            return ws, losses                       
-    print("Max iterations reached: %d" % t_max)
-    return ws, losses
-'''
-    
 
-#TODO implement variable secant in R^n 
-def variableSec(w_0,X,y, t_max, tol=1e-14):
-    
-    ws = [] 
-    k = 0
-    ws[k] = w_0
-    #for()
-    ak = squaredLoss(ws[k])
-    #ak = ( f[k] - f[k-1] )/(w[k]-w[k-1])   calculate ak
-    #w[k+1] = w[k] - f(w[k])/ak             find next ws => w[k+1]
-''''''
-     
-    
 def polyDataGen(n,deg=1,lower=0,upper=1,w=None, q=0, sigma=0, truth=False):
     #NB: deg is the number of "dimensions" of the polynomial, every point has deg features.
     """
@@ -604,14 +564,119 @@ def polyDataGen(n,deg=1,lower=0,upper=1,w=None, q=0, sigma=0, truth=False):
     if truth:
         return x, y, y_true
     return x, y
-    '''
-    x_poly = np.linspace(lower,upper,n)
-    for d in range(deg):
-        
-    #for x in x_poly
-    #calculate y as y = wx
-    y_poly = np.polyfit(x_poly)
-    np.polyfit()
-    '''
-    return w
+
+def secantMethod(loss, ws, datas, lables):
+    """
     
+    Secant method for optimization.
+    This function approximates the next point in an linear trajectory
+    using a secant-like approach in multi-dimensional space.
+    
+    Parameters
+    ----------
+    loss : callable
+        Loss function that takes (data, labels, weights) and returns a scalar loss value.
+    ws : list or array-like
+        List of weight vectors used to compute the points in the space.
+        The first element (ws[0]) is used as the reference point.
+    datas : 2 dimensional np.array
+        Input features or training data.
+    lables : 1 dimensional np.array
+        Target labels or ground truth values.
+    
+    Returns
+    -------
+    w_2 : array-like
+        The computed secondary weight vector using the secant method approximation.
+    Notes
+    -----
+    - The first weight vector ws[0] is treated as the initial reference point.
+    - The direction vector is computed as the sum of differences of each points anche the initial.
+    - The step size t_2 is determined by dividing the negative loss at the reference point
+      by the cumulative direction vector.
+    
+    The theory behind:
+    In iperspace the function of a iperline passing throw two points is T*(p1 - p2) + p1
+    I add the loss of each point to create the points to work with,
+    Than i create a line in the direction of the vector determinated by the sum
+    of the difference from each point and the initial point. 
+    Than intersect the line and the iperplane where lives the data without the loss by setting the loss to 0
+    and compute the T value.
+    Than evaluate the rimaning value that is the coordinates of the returning point
+    """
+    
+    # prende in input un array di punti, assumo il primo come punto iniziale 
+    direction_vector = sum([loss(datas, lables, ws[i]) - loss(datas, lables, ws[0]) for i in range(len(ws))])
+    t_2 = -loss(datas, lables, ws[0])/direction_vector
+    w_2 = t_2 * sum([ ws[i] - ws[0] for i in range(len(ws))]) + ws[0]
+    return w_2
+
+def GDSecantMethod(loss ,X ,y , ws, t_max, tol=1e-15):
+    """
+    Iteratively generate weight vectors using a secant-method update and collect them in a list.
+
+    This function performs up to t_max iterations.
+    Parameters
+    ----------
+    loss : callable
+        A loss (or objective) function passed through to secantMethod. The exact expected
+        signature is determined by the implementation of secantMethod, but it should accept
+        the loss argument as the first parameter.
+    X : 2 dimensional np.array
+        Feature matrix / input data passed to secantMethod.
+    y : 1 dimensional np.array
+        Target vector / labels passed to secantMethod.
+    ws : list-like
+        Initial list (or sequence) of weight vectors. The function works on a shallow copy of
+        this list, appending successive iterates to that copy; the original ws provided by the
+        caller is not modified. The initial length of ws determines the sliding window size
+        (n_dim) used when calling secantMethod.
+    t_max : int
+        Maximum number of iterations to perform.
+    tol : float, optional (default=1e-15)
+        Convergence tolerance. If the L2 norm (Euclidean norm) of a newly computed weight
+        vector is less than tol, the function prints a convergence message and returns early.
+
+    Returns
+    -------
+    ws : list
+        A list containing the initial weight vectors (copied from the input ws) followed by
+        the appended iterates produced during optimization. If convergence is reached before
+        t_max iterations, the list returned contains all iterates up to and including the
+        converged vector.
+
+    Notes
+    -----
+    - The function relies on an external function secantMethod; its required call signature
+      (in this code) is secantMethod(loss, ws_window, X, y), where ws_window is the most
+      recent n_dim elements of the current ws copy.
+
+    """
+    ws = ws.copy()
+    n_dim = len(ws)
+    for i in range(t_max):
+        w_next = secantMethod(loss, ws[-n_dim:], X, y)
+        ws.append(w_next)
+        if(np.linalg.norm(w_next,2) < tol):
+            print("Converged in %d iterations" % i)
+            return ws
+    return ws
+
+
+def partialBallCreate(w):
+    """
+    create a point for each dimension of W with distance 1 from initial point
+
+    Parameters:
+        w : array-like
+    a point
+
+    Returns:
+        ws : list of array-like
+    """
+    ws = [w]
+    for i in range(len(w)):
+        new_w = w.copy()
+        new_w[i] += 1
+        ws.append(new_w)
+    return ws
