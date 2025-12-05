@@ -1,4 +1,4 @@
-import LP_LIB as lp
+import notebooks.LP_LIB.LP_LIB as lp
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.linalg as la

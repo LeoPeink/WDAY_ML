@@ -4,9 +4,8 @@
 #step 1: generate data from y=sin(pi*x)+eps
 #   where eps ~ N(0,sigma)
 
-''''''
 import numpy as np
-import LP_LIB as lp
+import LPEG as lp
 import matplotlib.pyplot as plt
 
 # Import the 'randint' function from the 'random' library for generating random integers
@@ -91,7 +90,8 @@ plt.show()
 
 
 """
-X,y = lp.linDataGen(50,1,0,1,None,0.1)
+# Fixed: linDataGen -> linear_data_generator
+X,y = lp.linear_data_generator(50,1,0,1,None,sigma=0.1)
 print(X)
 plt.scatter(X,y)
 plt.show()

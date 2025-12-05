@@ -1,4 +1,4 @@
-import LP_LIB as lp
+import LPEG as lp
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.linalg as la
@@ -18,15 +18,14 @@ sigma = 0.5
 global_seed = 1
 np.random.seed(global_seed)
 
-X,y,t_true = lp.linDataGen(n,dim,l,u,w,q,sigma,True) #generate linear data with noise
+X,y,t_true = lp.linear_data_generator(n,dim,l,u,w,q,sigma,True) #generate linear data with noise
 
 X0 = np.array(X[:,0])
 X1 = np.array(X[:,1])
 
 
 #WE LEARN B AS WELL - MOD X TO HAVE 1s
-X = np.hstack((X, np.ones((X.shape[0],1))))    #add 1s to X so we learn b as well
-
+X = lp.add_bias_term(X)
 #fig = plt.figure()
 #ax = fig.add_subplot(projection='3d').scatter(X0,X1,y)
 

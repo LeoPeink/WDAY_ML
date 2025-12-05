@@ -1,4 +1,4 @@
-import LP_LIB as lp
+import LPEG as lp
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.linalg as la
@@ -18,7 +18,8 @@ global_seed = 1
 np.random.seed(global_seed)
 
 
-d = lp.linDataGen(n,dim,l,u,w,q,sigma,True) #generate linear data with noise
+# Fixed: linDataGen -> linear_data_generator
+d = lp.linear_data_generator(n,dim,l,u,w,q,sigma,True) #generate linear data with noise
 X = d[0]    #feature matrix, input
 # print(X)
 y = d[1]    #output vector, target with noise
