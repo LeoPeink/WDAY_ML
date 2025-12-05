@@ -9,6 +9,8 @@ A collection of machine learning utilities for regression, data generation, and 
 from .lpeg_regressions import *
 from .lpeg_data_generators import *
 from .lpeg_preprocessing import *
+from .lpeg_classificators import *
+
 
 # Define what gets imported when someone does "from lpeg import *"
 __all__ = [
@@ -39,7 +41,11 @@ __all__ = [
     # From lpeg_preprocessing
     'rescale',
     'add_bias_term',
-    'remove_bias_term'
+    'remove_bias_term',
+    
+    # From lpeg_classificators
+    'sigmoid'
+    
 ]
 
 __version__ = "1.0.0"
