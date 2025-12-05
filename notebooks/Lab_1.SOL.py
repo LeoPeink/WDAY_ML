@@ -6,7 +6,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import LPEG.lpeg_data_generators as lp
+import LPEG as lp
 
 """
 dim = 1 #number of features

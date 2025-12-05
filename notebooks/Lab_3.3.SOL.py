@@ -1,4 +1,4 @@
-import notebooks.LP_LIB.LP_LIB as lp
+import LPEG as lp
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.linalg as la
@@ -19,7 +19,7 @@ q=0
 sigma=5
 truth=True
 np.random.seed(global_seed)
-X, y, y_true = lp.polyDataGen(n,trueDeg,lower,upper,w,q,sigma,truth) #data generation. X is training data, y are generated values. y_true are the unable to obtain, true values used for plotting and mental sanity.
+X, y, y_true = lp.polynomial_data_generator(n,trueDeg,lower,upper,w,sigma,truth) #data generation. X is training data, y are generated values. y_true are the unable to obtain, true values used for plotting and mental sanity.
 
 #PLOT data + function - DON'T TOUCH
 plt.scatter(X, y, color='blue', label='Noisy data', alpha=0.5)

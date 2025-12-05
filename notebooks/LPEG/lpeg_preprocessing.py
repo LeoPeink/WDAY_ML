@@ -1,3 +1,5 @@
+import numpy as np
+
 def rescale(x,new_min,new_max,old_min=0,old_max=1):
     """
     Rescales x from [old_min, old_max] to [new_min, new_max]
