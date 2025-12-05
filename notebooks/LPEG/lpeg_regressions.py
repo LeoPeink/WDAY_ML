@@ -177,7 +177,7 @@ def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max
     print("Max iterations reached: %d" % t_max)
     return ws, losses
 
-def adaGraD(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15, fixed_alpha=True):
+def adaGraD(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15,:
     if w_0 is None:
         w_0 = np.ones(X.shape[1]) #if starting weights arent specified, generate 0s for every feature. #TODO fix
     w = w_0
