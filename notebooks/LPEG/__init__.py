@@ -45,8 +45,8 @@ __all__ = [
     
     # From lpeg_classificators
     'sigmoid'
-    
-]
+    'logistic_loss'
+    ]
 
 __version__ = "1.0.0"
 __author__ = "Leo Peinkhofer & Emilio Groppi"
