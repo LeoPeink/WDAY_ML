@@ -5,7 +5,7 @@ import numpy.linalg as LA
 
 # just to remember data[:,2] = np.where( (data[:,0]*m+q-data[:,1]<0) ^ (np.random.rand(len(data[:,1]))<0.05), -1, 1 )
 
-def linearRegression(x_train, y_train):
+def closed_form_linear_regression(x_train, y_train):
     """
     Implements linear regression using the closed-form solution.
     Parameters
@@ -26,7 +26,7 @@ def linearRegression(x_train, y_train):
     w = inv(x_train.T @ x_train) @ x_train.T @ y_train
     return w
 
-def ridgeRegression(x_train, y_train, lam):
+def closed_form_ridge_regression(x_train, y_train, lam):
     """
     Implements ridge regression using the closed-form solution.
     Parameters
@@ -53,6 +53,14 @@ def ridgeRegression(x_train, y_train, lam):
         d = 1
     w = (inv(x_train.T@x_train+lam*np.eye(d))@x_train.T)@y_train
     return w
+
+
+def ridge_regression_gradient(X : np.ndarray, y : np.ndarray, w : np.array, lam:float):
+    #return (2/len(X))*(X@w-y)@X + lam*np.sign(w)
+    return squaredLossGradient(X,y,w) + lam*np.sign(w) if np.all(w,0) else squaredLossGradient(X,y,w)
+
+def ridge_regression_loss(X : np.ndarray, y : np.ndarray, w : np.array, lam:float):
+    return squaredLoss(X,y,w)+lam*LA.norm(w,2) if np.all(w,0) else squaredLoss(X,y,w)
 
 def squaredLoss(X,y,w):
     """
@@ -153,7 +161,7 @@ def polySquaredLossGradient(X, y, w):
     gradient = (2/n) * X_powers.T @ residuals
     return gradient
 
-def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15, fixed_alpha=True):
+def gradientDescent(gradientFunction,lossFunction,X,y,lam = 0,w_0=None, alpha=0.1, t_max=1000, tol=1e-15, fixed_alpha=True):
     if w_0 is None:
         w_0 = np.ones(X.shape[1]) #if starting weights arent specified, generate 0s for every feature. #TODO fix
         
@@ -164,12 +172,12 @@ def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max
     for t in range(t_max):                  #stopper at t_max, maximum iteractions TODO fix
         if not fixed_alpha:
             alpha = t0/(t+1)                    #optional: update alpha each step, as per Cornell's Best Practices
-        s = -alpha*gradientFunction(X,y,w)      #evaluate stepsize using learning rate (alpha) and the given gradient function
+        s = -alpha*gradientFunction(X,y,w,lam)      #evaluate stepsize using learning rate (alpha) and the given gradient function
         w = w + s                               #update model weights
         ws.append(w.copy())                     #add to output (copy to avoid reference issues)
         #print('weights at iteration ',t)
         #print(w)
-        losses.append(lossFunction(X,y,w))        #add to output
+        losses.append(lossFunction(X,y,w,lam))        #add to output
         #print(s)
         if(np.linalg.norm(s,2) < tol):      #if stepsize is smaller than tol, stop
             print("Converged in %d iterations at tol=%g" % (t, tol))
@@ -177,7 +185,7 @@ def gradientDescent(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max
     print("Max iterations reached: %d" % t_max)
     return ws, losses
 
-def adaGraD(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, tol=1e-15):
+def adaGraD(gradientFunction,lossFunction,X,y,lam = 0,w_0=None, alpha=0.1, t_max=1000, tol=1e-15):
     if w_0 is None:
         w_0 = np.ones(X.shape[1]) #if starting weights arent specified, generate 0s for every feature. #TODO fix
     w = w_0
@@ -186,14 +194,14 @@ def adaGraD(gradientFunction,lossFunction,X,y,w_0=None, alpha=0.1, t_max=1000, t
     losses = []
     alpha = 1
     for t in range(t_max):                  #stopper at t_max, maximum iteractions TODO fix
-        g = gradientFunction(X,y,w)      #evaluate stepsize using learning rate (alpha) and the given gradient function
+        g = gradientFunction(X,y,w,lam)      #evaluate stepsize using learning rate (alpha) and the given gradient function
         regularization += g*g
         s = -alpha*g/(np.sqrt(regularization + 0.1))
         w = w + s                               #update model weights
         ws.append(w.copy())                     #add to output (copy to avoid reference issues)
         #print('weights at iteration ',t)
         #print(w)
-        losses.append(lossFunction(X,y,w))        #add to output
+        losses.append(lossFunction(X,y,w,lam))        #add to output
         #print(s)
         if(np.linalg.norm(s,2) < tol):      #if stepsize is smaller than tol, stop
             print("Converged in %d iterations at tol=%g" % (t, tol))

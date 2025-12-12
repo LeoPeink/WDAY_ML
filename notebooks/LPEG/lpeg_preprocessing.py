@@ -1,6 +1,6 @@
 import numpy as np
 
-def rescale(x,new_min,new_max,old_min=0,old_max=1):
+def minmax_scaler(x, new_min, new_max):
     """
     Rescales x from [old_min, old_max] to [new_min, new_max]
     
@@ -22,11 +22,13 @@ def rescale(x,new_min,new_max,old_min=0,old_max=1):
     float
         Rescaled value of x
     """
+    old_min = np.min(x)
+    old_max = np.max(x)
     #TODO check for edge cases and 0 division
     if old_max == old_min:
         raise ValueError("old_max and old_min cannot be the same")
-    for i in range(len(x)):
-        return (new_max - new_min)*(x[i] - old_min)/(old_max-old_min) + new_min
+    x = (new_max - new_min)*(x - old_min)/(old_max-old_min) + new_min
+    return x
 
 
 def add_bias_term(X):

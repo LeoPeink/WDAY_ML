@@ -20,7 +20,7 @@ def zero_one_loss(y_pred : np.ndarray , y_true : np.ndarray , sum:bool = True):
 
 
 np.random.seed(0)
-n = 300
+n = 300000
 sparcity = 5
 n_clouds = 2
 flip = 0
@@ -36,8 +36,6 @@ X = d[:,:-1]
 y = d[:,2]
 w_0 = [1,1]
 
-
-print(d)
 '''
 #DEBUG sigmoid plot
 xs = np.linspace(-1,1,100)
@@ -59,11 +57,10 @@ print('w shape =',np.shape(w))
 '''
 
 alpha = 0.1
-t_max = 200
+t_max = 2000
 tol = 1e-6
 fixed_alpha = True
 
-print(y)
 
 ws, losses = lp.adaGraD(lp.logistic_loss_gradient,lp.logistic_loss,X,y,w_0,alpha,t_max,tol)
 
@@ -131,10 +128,7 @@ plt.legend()
 # remove log scale for weights (uncomment if log scale is desired)
 # plt.yscale('log')
 
-
-
-
-
+#show sigmoid
 plt.show()
 
 ''' 
